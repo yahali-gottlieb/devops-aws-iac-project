@@ -1,0 +1,22 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/html;
+    index index.html;
+
+    server_name _;
+
+    # הגשת קבצי ה-Frontend
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+        # העברת בקשות לשרת ה-Backend
+    location /api/ {
+        proxy_pass http://{{ hostvars['backend_server']['ansible_host'] }}:5001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}

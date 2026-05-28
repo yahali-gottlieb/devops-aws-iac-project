@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infra Portal - Provisioning</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; text-align: center; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; font-weight: bold; margin-bottom: 0.5rem; }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="checkbox"] { width: 20px; height: 20px; }
+        button {
+            width: 100%;
+            padding: 1rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        button:hover { background-color: #2980b9; }
+        #response-box {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 4px;
+            display: none;
+            font-family: monospace;
+            background: #e8f8f5;
+            border: 1px solid #1abc9c;
+            color: #16a085;
+        }
+        .error { background: #fdedec; border-color: #e74c3c; color: #c0392b; }
+    </style>
+</head>
+<body>
+
+    <h1>Deploy New Machine</h1>
+    
+    <form id="provisionForm">
+        <div class="form-group">
+            <label for="name">Machine Name</label>
+            <input type="text" id="name" placeholder="e.g., WebServer-03" required minlength="2">
+        </div>
+
+        <div class="form-group">
+            <label for="os">Operating System</label>
+            <select id="os">
+                <option value="Ubuntu">Ubuntu 22.04 LTS</option>
+                <option value="Amazon Linux">Amazon Linux 2023</option>
+                <option value="Windows">Windows Server 2022</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="cpu">CPU Cores</label>
+            <input type="number" id="cpu" value="2" min="1" max="32" required>
+        </div>
+
+        <div class="form-group">
+            <label for="ram">RAM (GB)</label>
+            <input type="number" id="ram" value="4" min="1" max="128" required>
+        </div>
+
+        <div class="form-group checkbox-group">
+            <input type="checkbox" id="provision" value="true">
+            <label for="provision" style="margin:0;">Run NGINX Provisioning Script</label>
+        </div>
+
+        <button type="submit" id="submitBtn">Deploy Infrastructure</button>
+    </form>
+
+    <div id="response-box"></div>
+
+    <script>
+        document.getElementById('provisionForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Stop page from refreshing
+            
+            const btn = document.getElementById('submitBtn');
+            const responseBox = document.getElementById('response-box');
+            btn.innerText = "Deploying...";
+            btn.disabled = true;
+
+            // 1. Gather the data from the form
+            const payload = {
+                name: document.getElementById('name').value,
+                os: document.getElementById('os').value,
+                cpu: parseInt(document.getElementById('cpu').value),
+                ram: parseInt(document.getElementById('ram').value),
+                provision: document.getElementById('provision').checked
+            };
+
+            try {
+                // 2. Send the data to your Flask Backend API
+                const response = await fetch('/api/provision', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+            });
+
+                const data = await response.json();
+                
+                // 3. Display the result on the screen
+                responseBox.style.display = "block";
+                if (response.ok) {
+                    responseBox.className = "";
+                    responseBox.innerHTML = `<strong>Success!</strong><br>${data.message}<br><br>Instance ID: ${data.data.instance_id}<br>Type: ${data.data.instance_type}`;
+                } else {
+                    responseBox.className = "error";
+                    responseBox.innerHTML = `<strong>Error!</strong><br>${JSON.stringify(data.details || data.message)}`;
+                }
+            } catch (error) {
+                responseBox.style.display = "block";
+                responseBox.className = "error";
+                responseBox.innerHTML = `<strong>Connection Error:</strong> Is your Flask server running on port 5001?`;
+            } finally {
+                btn.innerText = "Deploy Infrastructure";
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
