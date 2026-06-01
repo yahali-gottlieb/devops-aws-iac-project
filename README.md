@@ -12,7 +12,8 @@ The environment is structured securely with a separation of concerns:
 * **Private Subnets:** Host the Backend server, Worker server, and RDS PostgreSQL instance.
 * **Internet & Routing:** Internet Gateway for public access, and a NAT Gateway to allow private instances to download updates securely.
 
-<img width="1536" height="1024" alt="ChatGPT Image Jun 1, 2026, 06_41_40 PM" src="https://github.com/user-attachments/assets/5830a523-349b-44ea-adfd-bd0fe790e26c" />
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/d16fafd2-bdc9-4eec-a183-a9d11e1120e8" />
+
 
 
 ## Components Created by Terraform
