@@ -12,42 +12,8 @@ The environment is structured securely with a separation of concerns:
 * **Private Subnets:** Host the Backend server, Worker server, and RDS PostgreSQL instance.
 * **Internet & Routing:** Internet Gateway for public access, and a NAT Gateway to allow private instances to download updates securely.
 
-```mermaid
-graph TD
-    subgraph AWS_Cloud [AWS Cloud]
-        subgraph VPC [VPC 10.0.0.0/16]
-            IGW[Internet Gateway]
-            
-            subgraph Public_Subnet [Public Subnet]
-                Nginx[Frontend / Nginx EC2]
-                NAT[NAT Gateway]
-            end
-            
-            subgraph Private_Subnets [Private Subnets]
-                Backend[Backend EC2 - Flask/Python]
-                Worker[Worker EC2 - Python]
-                RDS[(RDS PostgreSQL)]
-            end
-        end
-        
-        S3[(S3 Bucket)]
-        SNS((SNS Topic))
-    end
+<img width="1536" height="1024" alt="ChatGPT Image Jun 1, 2026, 06_41_40 PM" src="https://github.com/user-attachments/assets/5830a523-349b-44ea-adfd-bd0fe790e26c" />
 
-    User((User Browser)) -->|HTTP 80| IGW
-    IGW --> Nginx
-    Nginx -->|Reverse Proxy Port 5001| Backend
-    
-    Backend -->|Outbound Updates| NAT
-    Worker -->|Outbound Updates| NAT
-    NAT --> IGW
-    
-    Backend -->|Read/Write Port 5432| RDS
-    Worker -->|Read Port 5432| RDS
-    
-    Worker -->|Uploads Report| S3
-    Worker -->|Sends Alert| SNS
-```
 
 ## Components Created by Terraform
 * **Networking:** VPC, Public & Private Subnets, Internet Gateway, NAT Gateway, Route Tables.
